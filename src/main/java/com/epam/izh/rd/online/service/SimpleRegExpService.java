@@ -1,5 +1,13 @@
 package com.epam.izh.rd.online.service;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SimpleRegExpService implements RegExpService {
 
     /**
@@ -11,7 +19,26 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String maskSensitiveData() {
-        return null;
+
+        String path = "src/main/resources/sensitive_data.txt";
+        StringBuilder fileContent = null;
+
+        try (FileReader in = new FileReader(path);
+             BufferedReader reader = new BufferedReader(in)) {
+            while (reader.ready()) {
+                fileContent = new StringBuilder(reader.readLine());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Pattern pattern = Pattern.compile("(\\d{4}\\s)\\d{4}\\s\\d{4}\\s(\\d{4})");
+        assert fileContent != null;
+        Matcher matcher = pattern.matcher(fileContent.toString());
+
+        fileContent = new StringBuilder(matcher.replaceAll("$1**** **** $2"));
+
+        return fileContent.toString();
     }
 
     /**
@@ -22,6 +49,27 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String replacePlaceholders(double paymentAmount, double balance) {
-        return null;
+
+        String path = "src/main/resources/sensitive_data.txt";
+        StringBuilder fileContent = null;
+
+        try (FileReader in = new FileReader(path);
+             BufferedReader reader = new BufferedReader(in)) {
+            while (reader.ready()) {
+                fileContent = new StringBuilder(reader.readLine());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Pattern pattern = Pattern.compile("\\$\\{\\w+}");
+        Matcher matcher = pattern.matcher(fileContent.toString());
+
+        fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(paymentAmount))));
+
+        matcher = pattern.matcher(fileContent.toString());
+        fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(balance))));
+
+        return fileContent.toString();
     }
 }
