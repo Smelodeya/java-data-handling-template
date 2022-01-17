@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 
 public class SimpleFileRepository implements FileRepository {
 
-    //private String path;
-
     /**
      * Метод рекурсивно подсчитывает количество файлов в директории
      *
@@ -18,31 +16,23 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public long countFilesInDirectory(String path) {
-        long count = 0;
-        File f;
-
-        URL res = this.getClass().getClassLoader().getResource(path);
-        f = new File(res.getPath());
-        //System.out.println(f.getAbsolutePath());
-
-
-            if (f != null) {
-                File[] files = f.listFiles();
-
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isFile()) {
-                            count++;
-                        }
-                        if (file.isDirectory()) {
-                            count += countFilesInDirectory(file.getAbsolutePath());
-                        }
+        long counter = 0;
+        URL resource = this.getClass().getClassLoader().getResource(path);
+        if (resource != null) {
+            File directory = new File(resource.getPath());
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        counter++;
+                    }
+                    if (file.isDirectory()) {
+                        counter += countFilesInDirectory(path + File.separator + file.getName());
                     }
                 }
             }
-
-
-        return count;
+        }
+        return counter;
     }
 
     /**
@@ -53,23 +43,21 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public long countDirsInDirectory(String path) {
-
-        long count = 1;
-        File f =new File(path);
-        File[] files = f.listFiles();
-
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    count += countDirsInDirectory(file.getAbsolutePath());
+        long counter = 1;
+        URL resource = this.getClass().getClassLoader().getResource(path);
+        if (resource != null) {
+            File directory = new File(resource.getPath());
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        counter += countDirsInDirectory(path + File.separator + file.getName());
+                    }
                 }
             }
-            //System.out.println(count);
-        }  return count;
-        // return 0;
+        }
+        return counter;
     }
-
-
 
     /**
      * Метод копирует все файлы с расширением .txt
@@ -79,7 +67,6 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public void copyTXTFiles(String from, String to) {
-
         Path sourceFile = Paths.get(from);
         Path copyFile = Paths.get(to);
 
@@ -107,45 +94,18 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public boolean createFile(String path, String name) {
-
-        Path file = Paths.get(path + File.separator + name);
-        boolean fileIsCreated = false;
-
-        if (!Files.exists(file.getParent())) {
-            try {
-                Files.createDirectory(file.getParent());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!Files.exists(file)){
-            try {
-                Files.createFile(file);
-                fileIsCreated = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }}
-
-        return fileIsCreated;
-
-        /*File dir = new File(path);
-        File newFile = new File(path + File.separator + name);
+        File directory = new File(getClass().getResource("/").getPath() + path);
+        File newFile = new File(directory.getAbsolutePath() + File.separator + name);
         boolean created = false;
 
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-
-        if (!newFile.exists()){
+        if (!newFile.exists()) {
             try {
                 created = newFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return created;*/
-        //return false;
-
+        return created;
     }
 
     /**
@@ -156,20 +116,18 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public String readFileFromResources(String fileName) {
-        String path = "src/main/resources";
+        URL resources = this.getClass().getClassLoader().getResource(fileName);
         StringBuilder fileContent = null;
-
-        try (FileReader in = new FileReader(path + File.separator + fileName);
+        if (resources != null) {
+        try (FileReader in = new FileReader(resources.getPath());
              BufferedReader reader = new BufferedReader(in)) {
             while (reader.ready()) {
                 fileContent = new StringBuilder(reader.readLine());
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        }
         return fileContent.toString();
     }
 }

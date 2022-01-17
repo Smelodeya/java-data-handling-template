@@ -17,7 +17,6 @@ public class SimpleDateService implements DateService {
     public String parseDate(LocalDate localDate) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
         return localDate.format(formatter);
     }
 
@@ -54,13 +53,11 @@ public class SimpleDateService implements DateService {
      */
     @Override
     public long getNextLeapYear() {
-
         LocalDate currentDate = LocalDate.now();
         long currentYear = currentDate.getYear();
         long year = 0;
         boolean isLeapYear = false;
         int i = 0;
-
         while ((!isLeapYear) && (i < 4)) {
             year = currentYear + i;
             isLeapYear = Year.isLeap(year);

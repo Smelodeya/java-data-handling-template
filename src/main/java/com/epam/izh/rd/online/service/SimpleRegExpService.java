@@ -1,6 +1,7 @@
 package com.epam.izh.rd.online.service;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,25 +20,23 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String maskSensitiveData() {
-
-        String path = "src/main/resources/sensitive_data.txt";
+        URL resources = this.getClass().getClassLoader().getResource("sensitive_data.txt");
         StringBuilder fileContent = null;
-
-        try (FileReader in = new FileReader(path);
-             BufferedReader reader = new BufferedReader(in)) {
-            while (reader.ready()) {
-                fileContent = new StringBuilder(reader.readLine());
+        if (resources != null) {
+            try (FileReader in = new FileReader(resources.getPath());
+                 BufferedReader reader = new BufferedReader(in)) {
+                while (reader.ready()) {
+                    fileContent = new StringBuilder(reader.readLine());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (fileContent != null) {
+                Pattern pattern = Pattern.compile("(\\d{4}\\s)\\d{4}\\s\\d{4}\\s(\\d{4})");
+                Matcher matcher = pattern.matcher(fileContent.toString());
+                fileContent = new StringBuilder(matcher.replaceAll("$1**** **** $2"));
+            }
         }
-
-        Pattern pattern = Pattern.compile("(\\d{4}\\s)\\d{4}\\s\\d{4}\\s(\\d{4})");
-        assert fileContent != null;
-        Matcher matcher = pattern.matcher(fileContent.toString());
-
-        fileContent = new StringBuilder(matcher.replaceAll("$1**** **** $2"));
-
         return fileContent.toString();
     }
 
@@ -49,27 +48,26 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String replacePlaceholders(double paymentAmount, double balance) {
-
-        String path = "src/main/resources/sensitive_data.txt";
+        URL resources = this.getClass().getClassLoader().getResource("sensitive_data.txt");
         StringBuilder fileContent = null;
-
-        try (FileReader in = new FileReader(path);
-             BufferedReader reader = new BufferedReader(in)) {
-            while (reader.ready()) {
-                fileContent = new StringBuilder(reader.readLine());
+        if (resources != null) {
+            try (FileReader in = new FileReader(resources.getPath());
+                 BufferedReader reader = new BufferedReader(in)) {
+                while (reader.ready()) {
+                    fileContent = new StringBuilder(reader.readLine());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            Pattern pattern = Pattern.compile("\\$\\{\\w+}");
+            if (fileContent != null) {
+                Matcher matcher = pattern.matcher(fileContent.toString());
+                fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(paymentAmount))));
+                matcher = pattern.matcher(fileContent.toString());
+                fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(balance))));
+            }
         }
-
-        Pattern pattern = Pattern.compile("\\$\\{\\w+}");
-        Matcher matcher = pattern.matcher(fileContent.toString());
-
-        fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(paymentAmount))));
-
-        matcher = pattern.matcher(fileContent.toString());
-        fileContent = new StringBuilder(matcher.replaceFirst(String.valueOf(Math.round(balance))));
-
         return fileContent.toString();
     }
 }

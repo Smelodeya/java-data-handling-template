@@ -28,7 +28,6 @@ public class SimpleBigNumbersService implements BigNumbersService {
      */
     @Override
     public BigInteger getPrimaryNumber(int range) {
-
         int tempRange = 0;
         BigInteger j = BigInteger.valueOf(2);
         BigInteger primaryNumber = BigInteger.ZERO;
@@ -49,7 +48,6 @@ public class SimpleBigNumbersService implements BigNumbersService {
             if (isPrimary) {
                 tempRange++;
             }
-
             j = j.add(BigInteger.ONE);
         }
         return primaryNumber;
